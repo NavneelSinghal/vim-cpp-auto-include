@@ -1,3 +1,11 @@
+# README
+
+New features:
+
+    1. Indented headers are not treated as already included. This is done to avoid messing with `#include`s that are inside `#ifdef`s etc.
+
+## Original README
+
 Automatically insert or delete `#include`s for C++ code in vim.
 
 ![vim-cpp-auto-include demo](https://raw.github.com/quark-zju/vim-cpp-auto-include/master/demo/vim-cpp-auto-include-demo.gif)

@@ -120,7 +120,8 @@ module CppAutoInclude
       # split includes and other content
       includes, content = [['', 0]], ''
       VIM::lines.each_with_index do |l, i|
-        if l =~ /^\s*#\s*include/
+        # if l =~ /^\s*#\s*include/
+        if l =~ /^#\s*include/
           includes << [l, i+1]
         else
           content << l.gsub(/\/\/[^"]*(?:"[^"']*"[^"]*)*$/,'') << "\n"
