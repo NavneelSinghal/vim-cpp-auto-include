@@ -3,6 +3,7 @@
 New features:
 
 1. Indented headers are not treated as already included. This is done to avoid messing with `#include`s that are inside `#ifdef`s etc.
+2. Add support for class template argument deduction in C++17
 
 ## Original README
 

@@ -77,9 +77,12 @@ module CppAutoInclude
   # shortcut to generate regex
   C = proc do |*names| names.map { |name| /\b#{name}\b/ } end
   F = proc do |*names| names.map { |name| /\b#{name}\s*\(/ } end
-  T = proc do |*names| names.map { |name| /\b#{name}\s*<\b/ } end
+  # Replaced T by C to recognize CTAD
+  # T = proc do |*names| names.map { |name| /\b#{name}\s*<\b/ } end
+  T = proc do |*names| names.map { |name| /\b#{name}\b/ } end
   R = proc do |*regexs| Regexp.union(regexs.flatten) end
 
+  # TODO: add C++17 features and ext/pb_ds/ includes
   # header, std namespace, keyword complete (false: no auto remove #include), unioned regex
   HEADER_STD_COMPLETE_REGEX = [
     ['cstdio',         false, true , R[F['s?scanf', 'puts', 's?printf', 'f?gets', '(?:get|put)char', 'getc'], C['FILE','std(?:in|out|err)','EOF']] ],
@@ -113,13 +116,14 @@ module CppAutoInclude
   USING_STD       = 'using namespace std;'
 
   # do nothing if lines.count > LINES_THRESHOLD
-  LINES_THRESHOLD = 1000
+  LINES_THRESHOLD = 10000
 
   class << self
     def includes_and_content
       # split includes and other content
       includes, content = [['', 0]], ''
       VIM::lines.each_with_index do |l, i|
+        # use the below regex to parse includes that don't start on a line
         # if l =~ /^\s*#\s*include/
         if l =~ /^#\s*include/
           includes << [l, i+1]
