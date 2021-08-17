@@ -82,35 +82,50 @@ module CppAutoInclude
   T = proc do |*names| names.map { |name| /\b#{name}\b/ } end
   R = proc do |*regexs| Regexp.union(regexs.flatten) end
 
-  # TODO: add C++17 features and ext/pb_ds/ includes
+  # TODO: add C++17 features and ext/pb_ds/ includes. Note that this is not complete, it is just a small subset that is convenient
   # header, std namespace, keyword complete (false: no auto remove #include), unioned regex
   HEADER_STD_COMPLETE_REGEX = [
-    ['cstdio',         false, true , R[F['s?scanf', 'puts', 's?printf', 'f?gets', '(?:get|put)char', 'getc'], C['FILE','std(?:in|out|err)','EOF']] ],
-    ['cassert',        false, true , R[F['assert']] ],
-    ['cstring',        false, true , R[F['mem(?:cpy|set|n?cmp)', 'str(?:len|n?cmp|n?cpy|error|cat|str|chr)']] ],
-    ['cstdlib',        false, true , R[F['system','abs','ato[if]', 'itoa', 'strto[dflu]+','free','exit','l?abs','s?rand(?:_r|om)?','qsort'], C['EXIT_[A-Z]*', 'NULL']] ],
-    ['cmath',          false, true , R[F['pow[fl]?','a?(?:sin|cos|tan)[hl]*', 'atan2[fl]?', 'exp[m12fl]*', 'fabs[fl]?', 'log[210fl]+', 'nan[fl]?', '(?:ceil|floor)[fl]?', 'l?l?round[fl]?', 'sqrt[fl]?'], C['M_[A-Z24_]*', 'NAN', 'INFINITY', 'HUGE_[A-Z]*']] ],
-    ['strings.h',      false, true , R[F['b(?:cmp|copy|zero)', 'strn?casecmp']] ],
-    ['typeinfo',       false, true , R[C['typeid']] ],
-    ['new',            true , true , R[F['set_new_handler'], C['nothrow']] ],
-    ['limits',         true , true , R[T['numeric_limits']] ],
-    ['algorithm',      true , true , R[F['(?:stable_|partial_)?sort(?:_copy)?', 'unique(?:_copy)?', 'reverse(?:_copy)?', 'nth_element', '(?:lower|upper)_bound', 'binary_search', '(?:prev|next)_permutation', 'min', 'max', 'count', 'random_shuffle', 'swap']] ],
-    ['numeric',        true , true , R[F['partial_sum', 'accumulate', 'adjacent_difference', 'inner_product']] ],
-    ['iostream',       true , true , R[C['c(?:err|out|in)']] ],
-    ['sstream',        true , true , R[C['[io]?stringstream']] ],
-    ['bitset',         true , true , R[T['bitset']] ],
-    ['complex',        true , true , R[T['complex']] ],
-    ['deque',          true , true , R[T['deque']] ],
-    ['queue',          true , true , R[T['queue','priority_queue']] ],
-    ['list',           true , true , R[T['list']] ],
-    ['map',            true , true , R[T['(?:multi)?map']] ],
-    ['set',            true , true , R[T['(?:multi)?set']] ],
-    ['vector',         true , true , R[T['vector']] ],
-    ['iomanip',        true , true , R[F['setprecision', 'setbase', 'setw'], C['fixed', 'hex']]],
-    ['fstream',        true , true , R[T['fstream']] ],
-    ['ctime',          false, true , R[F['time', 'clock'], C['CLOCKS_PER_SEC']]],
-    ['string',         true , true , R[C['string']] ],
-    ['utility',        true , true , R[T['pair'], F['make_pair']] ],
+    ['tuple',                           true,  true , R[F['make_tuple', 'tie', 'forward_as_tuple', 'tuple_cat', 'apply', 'make_from_tuple'], C['get', 'tuple', 'tuple_size', 'tuple_element', 'uses_allocator', 'ignore']] ], # tie in streams is a false positive
+    ['cstdio',                          false, true , R[F['s?scanf', 'puts', 's?printf', 'fgets', '(?:get|put)char', 'getc'], C['FILE','std(?:in|out|err)','EOF']] ],
+    ['cassert',                         false, true , R[F['assert']] ],
+    ['cstring',                         false, true , R[F['mem(?:cpy|set|move|chr|n?cmp)', 'str(?:len|n?cmp|n?cpy|error|cat|str|chr)']] ],
+    ['cstdlib',                         false, true , R[F['system','abs','ato[if]', 'itoa', 'strto[dflu]+','free','exit','l?l?abs','s?rand(?:_r|om)?','qsort'], C['EXIT_[A-Z]*', 'NULL']] ],
+    ['cmath',                           false, true , R[F['pow[fl]?','a?(?:sin|cos|tan)[hl]*', 'atan2[fl]?', 'exp[m12fl]*', 'fabs[fl]?', 'log[210fl]+', 'nan[fl]?', '(?:ceil|floor)[fl]?', 'l?l?round[fl]?', 'sqrt[fl]?', 'cbrt[fl]?', 'hypot[fl]?'], C['M_[A-Z24_]*', 'NAN', 'INFINITY', 'HUGE_[A-Z]*']] ],
+    ['strings.h',                       false, true , R[F['b(?:cmp|copy|zero)', 'strn?casecmp']] ],
+    ['typeinfo',                        false, true , R[C['typeid', 'bad_typeid', 'bad_cast']] ],
+    ['type_traits',                     false, true , R[C['(?:integral|bool)_constant', 'is_[a-z_]*', 'enable_if', 'void_t', 'common_type', 'decay']] ], # is_sorted is a false positive
+    ['new',                             true , true , R[F['set_new_handler'], C['nothrow']] ],
+    ['limits',                          true , true , R[T['numeric_limits']] ],
+    ['algorithm',                       true , true , R[F['(?:stable_|partial_)?sort(?:_copy)?', 'unique(?:_copy)?', 'reverse(?:_copy)?', 'nth_element', '(?:lower|upper)_bound', 'binary_search', '(?:prev|next)_permutation', 'min(?:max)?(?:_element)?', 'max(?:_element)?', 'count', '(?:random_)?shuffle', '(?:iter)?swap(?:_ranges)?', '(?:all|any|none)_of', 'for_each(?:_n)?', 'count(?:if)?', 'mismatch', 'find(?:_if(?:_not)?|end)?', 'find_first_of', 'adjacent_find', 'search(?:_n)?', 'copy(?:_if|_n|_backward)?', 'move(?:_backward)?', 'fill(?:_n)?', 'transform', 'generate(?:_n)?', '(?:replace|remove|reverse|rotate)(?:copy)?(?:_if)?', 'sample', 'shift_(?:left|right)', '[a-z_]*partition[a-z_]*', 'is_sorted[a-z_]*', 'equal_range', 'set_[a-z_]*', '[a-z_]*heap[a-z_]*', 'clamp', 'equal', 'lexicographical_compare']] ],
+    ['numeric',                         true , true , R[F['partial_sum', 'accumulate', 'adjacent_difference', 'inner_product', 'iota', 'reduce', 'transform_reduce', 'gcd', 'lcm', '(?:transform)?(?:inclusive|exclusive)_scan']] ],
+    ['iostream',                        true , true , R[C['c(?:err|out|in)']] ],
+    ['sstream',                         true , true , R[C['[io]?stringstream']] ],
+    ['bitset',                          true , true , R[T['bitset']] ],
+    ['chrono',                          true , true , R[C['std::chrono::duration', 'std::chrono::time_point', 'std::chrono::system_clock', 'std::chrono::steady_clock', 'std::chrono::high_resolution_clock']] ],
+    ['functional',                      true , true , R[C['function', 'bind', 'c?ref', 'invoke[_r]+', 'plus', 'minus', 'multiplies', 'divides', 'modulus', 'negate', 'equal_to', 'not_equal_to', 'greater', 'less', 'greater_equal', 'less_equal', 'logical_(?:and|or|not)', 'bit_(?:and|or|not|xor)', 'not_fn', 'default_searcher', 'boyer_moore_[a-z]*_searcher'], F['hash']] ],
+    ['optional',                        true , true , R[C['optional', 'nullopt'], F['make_optional']] ],
+    ['complex',                         true , true , R[T['complex']] ],
+    ['deque',                           true , true , R[T['deque']] ],
+    ['stack',                           true , true , R[T['stack']] ],
+    ['queue',                           true , true , R[T['queue','priority_queue']] ],
+    ['list',                            true , true , R[T['list']] ],
+    ['map',                             true , true , R[T['(?:multi)?map']] ],
+    ['unordered_map',                   true , true , R[T['unordered_(?:multi)?map']] ],
+    ['set',                             true , true , R[T['(?:multi)?set']] ],
+    ['unordered_set',                   true , true , R[T['unordered_(?:multi)?set']] ],
+    ['vector',                          true , true , R[T['vector']] ],
+    ['iomanip',                         true , true , R[F['setprecision', 'setbase', 'setw'], C['fixed', 'hex']]],
+    ['fstream',                         true , true , R[T['fstream']] ],
+    ['ctime',                           false, true , R[F['time', 'clock'], C['CLOCKS_PER_SEC']]],
+    ['string',                          true , true , R[C['string'], F['sto(?:i|l|ll|ul|ull|f|d|ld)', 'to_string']] ],
+    ['utility',                         true , true , R[T['pair', 'integer_sequence'], F['make_pair', 'swap', 'exchange', 'forward', 'move', 'move_if_noexcept', 'as_const', 'declval']] ],
+    ['memory',                          true , true , R[T['unique_ptr', 'weak_ptr', 'shared_ptr'], F['addressof', 'align', 'uninitialized_[a-z_]*', 'make_(?:unique|shared)']] ],
+    ['cstdint',                         true , true , R[C['u?int[a-z0-9_]*_t', 'U?INT[A-Z0-9_]*']] ],
+    ['cctype',                          true , true , R[F['isalnum', 'isalpha', 'islower', 'isupper', 'isdigit', 'isxdigit', 'iscntrl', 'isgraph', 'isspace', 'isblank', 'isprint', 'ispunct', 'tolower', 'toupper']] ],
+    ['iterator',                        true , true , R[F['[a-z_]*_iterator', '[a-z_]*inserter', 'advance', 'distance', 'next', 'prev', 'c?r?(?:begin|end)', 'size', 'empty']] ],
+    ['array',                           true , true , R[C['array']] ],
+    ['ext/pb_ds/assoc_container.hpp',   true , true , R[C['__gnu_pbds']]],
+    ['ext/pb_ds/tree_policy.hpp',       true , true , R[C['__gnu_pbds']]],
   ]
 
   USING_STD       = 'using namespace std;'
@@ -149,9 +164,9 @@ module CppAutoInclude
           if has_keyword && !has_header
             VIM::append(includes.last.last, "#include <#{header}>")
             includes = includes_and_content.first
-          elsif !has_keyword && has_header && complete
-            VIM::remove(has_header.last)
-            includes = includes_and_content.first
+          # elsif !has_keyword && has_header && complete
+          #   VIM::remove(has_header.last)
+          #   includes = includes_and_content.first
           end
         end
 
