@@ -21,10 +21,10 @@ and intended to be used on simple C++ files only.
 
 Installation
 ============
-Copy [`plugin/cpp_auto_include.vim`](/quark-zju/vim-cpp-auto-include/raw/master/plugin/cpp_auto_include.vim) to `~/.vim/plugin/`.
+Copy [`plugin/cpp_auto_include.vim`](/NavneelSinghal/vim-cpp-auto-include/raw/master/plugin/cpp_auto_include.vim) to `~/.vim/plugin/`.
 
 Alternatively, with [Vundle](/gmarik/vundle), 
-add `Bundle 'quark-zju/vim-cpp-auto-include'` in `~/.vimrc` 
+add `Bundle 'NavneelSinghal/vim-cpp-auto-include'` in `~/.vimrc` 
 and run `BundleInstall` in vim.
 
 Usage
